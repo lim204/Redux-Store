@@ -8,7 +8,7 @@ const resolvers = {
         categories: async () => {
             return await Category.find();
         },
-        products: async (parent,{categories, name}) => {
+        products: async (parent,{category, name}) => {
             const params = {};
             if (category){
                 params.category = category;
@@ -21,6 +21,23 @@ const resolvers = {
             }
           return await Product.find(params).populate('category');
         },
+        product: async (parent,{_id})=>{
+            return await Product.findById(_id).populate('category');
+        },
+        user: async (parent,arg,context) =>{
+            if (context.user){
+                const user = await User.findById(context._id).populate
+                ({
+                    path: 'orders.products',
+                    populate: 'category'
+                });
+                user.orders.sort((a,b)=>b.purchaseDate - a.purchaseDate);
+
+                return user;
+            }
+            throw new AuthenticationError('Not logged in');
+        },
+        
     }
 }
 
